@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   modules: [
     //...
     '@vee-validate/nuxt',
+    '@pinia/nuxt',
   ],
   veeValidate: {
     // disable or enable auto imports
@@ -17,4 +18,4 @@ export default defineNuxtConfig({
       ErrorMessage: 'VeeErrorMessage',
     },
   },
-})
+});
