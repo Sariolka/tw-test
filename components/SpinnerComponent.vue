@@ -1,65 +1,36 @@
 <script setup lang="ts"></script>
 
 <template>
-  <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24">
-    <g>
-      <rect width="2" height="5" x="11" y="1" fill="currentColor" opacity=".14" />
-      <rect
-        width="2"
-        height="5"
-        x="11"
-        y="1"
-        fill="currentColor"
-        opacity=".29"
-        transform="rotate(30 12 12)"
-      />
-      <rect
-        width="2"
-        height="5"
-        x="11"
-        y="1"
-        fill="currentColor"
-        opacity=".43"
-        transform="rotate(60 12 12)"
-      />
-      <rect
-        width="2"
-        height="5"
-        x="11"
-        y="1"
-        fill="currentColor"
-        opacity=".57"
-        transform="rotate(90 12 12)"
-      />
-      <rect
-        width="2"
-        height="5"
-        x="11"
-        y="1"
-        fill="currentColor"
-        opacity=".71"
-        transform="rotate(120 12 12)"
-      />
-      <rect
-        width="2"
-        height="5"
-        x="11"
-        y="1"
-        fill="currentColor"
-        opacity=".86"
-        transform="rotate(150 12 12)"
-      />
-      <rect width="2" height="5" x="11" y="1" fill="currentColor" transform="rotate(180 12 12)" />
-      <animateTransform
-        attributeName="transform"
-        calcMode="discrete"
-        dur="1s"
-        repeatCount="indefinite"
-        type="rotate"
-        values="0 12 12;30 12 12;60 12 12;90 12 12;120 12 12;150 12 12;180 12 12;210 12 12;240 12 12;270 12 12;300 12 12;330 12 12;360 12 12"
-      />
-    </g>
-  </svg>
+  <div class="spin"></div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.spin {
+  background-image: url('../assets/icons/spinner.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-animation: spin 1s linear infinite;
+  -moz-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+}
+
+@-moz-keyframes spin {
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+</style>

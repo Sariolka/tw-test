@@ -26,22 +26,16 @@ const pushToMain = () => {
   router.push('/account');
 };
 
-const { handleSubmit, errors, resetForm } = useForm({
+const { handleSubmit, errors, isSubmitting } = useForm({
   validationSchema,
 });
 
-const { value: email } = useField('email', {
-  validateOnInput: false,
-  validateOnBlur: true,
-  validateOnChange: false,
-});
-const { value: password } = useField('password', {
-  validateOnInput: false,
-  validateOnBlur: true,
-  validateOnChange: false,
-});
+const { value: email } = useField('email');
+
+const { value: password } = useField('password');
 
 const handleSignin = async (email: string, password: string) => {
+  errorText.value = '';
   try {
     const user = {
       email: email,
@@ -62,7 +56,6 @@ const handleSignin = async (email: string, password: string) => {
     console.error(error);
     errorText.value = error;
   }
-  return false;
 };
 
 const onSubmit = handleSubmit(async (values) => {
@@ -75,11 +68,12 @@ const onSubmit = handleSubmit(async (values) => {
     <form class="login__form" id="login" novalidate @submit.prevent="onSubmit">
       <h1 class="login__title">Авторизация</h1>
       <div class="login__container">
-        <label for="email" class="login__label">Email</label>
+        <label for="email" class="login__label">Логин</label>
         <input
           class="login__input"
           :class="{ 'login__input_type-error': errors.email || errorText }"
-          v-model="email"
+          v-model.lazy="email"
+          placeholder="Введите логин"
           type="email"
           id="email"
         />
@@ -87,19 +81,21 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="login__container">
-        <label for="password" class="login__label">Password</label>
+        <label for="password" class="login__label">Пароль</label>
         <input
-          v-model="password"
+          v-model.lazy="password"
           class="login__input"
           :class="{ 'login__input_type-error': errors.password || errorText }"
           type="password"
+          placeholder="Введите пароль"
           id="password"
           minlength="6"
         />
         <span class="login__error">{{ errors.password }}</span>
       </div>
-      <button class="login__button" type="submit">
+      <button class="login__button" type="submit" :disabled="isSubmitting">
         Войти
+        <SpinnerComponent v-if="isSubmitting" class="login__spinner" />
         <span class="login__error">{{ errorText }}</span>
       </button>
     </form>
@@ -192,7 +188,7 @@ const onSubmit = handleSubmit(async (values) => {
     line-height: 19.36px;
     font-style: normal;
     font-weight: 700;
-    gap: 6px;
+    gap: 15px;
     border-radius: 4px;
     cursor: pointer;
     padding: 10px 19.5px;
@@ -210,11 +206,15 @@ const onSubmit = handleSubmit(async (values) => {
     font-family: 'Inter', 'Arial', sans-serif;
     position: absolute;
     bottom: -18px;
-    left: 0;
     font-size: 12px;
     line-height: normal;
     color: #b91c1c;
     font-weight: 400;
+  }
+
+  &__spinner {
+    width: 20px;
+    height: 20px;
   }
 }
 </style>

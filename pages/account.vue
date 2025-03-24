@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { IData } from '~/types/types';
-import { fetchData } from '~/api/api';
 import type { ComputedRef } from 'vue';
 import { useAuthStore } from '~/stores';
 
@@ -21,9 +20,16 @@ const pushToLogin = () => {
 };
 
 //Выход
-const handleLogout = () => {
-  store.logout();
-  pushToLogin();
+const handleLogout = async () => {
+  isLoading.value = true;
+  try {
+    await store.logout();
+    pushToLogin();
+  } catch (error) {
+    console.log('Что-то пошло не так:', error);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 //получение данных
@@ -100,12 +106,14 @@ const filteredData: ComputedRef<IData[]> = computed(() => {
 <template>
   <section class="main-page" :class="{ 'main-page_loading': isLoading }">
     <div class="main-page__loading" v-if="isLoading">
-      <SpinnerComponent />
+      <SpinnerComponent class="main-page__spinner" />
     </div>
     <div class="main-page__content" v-else>
       <div class="main-page__user-control">
         Пользователь:&nbsp;<strong>{{ user }} &emsp;</strong>
-        <button class="main-page__btn-exit" @click="handleLogout">Выйти</button>
+        <button class="main-page__btn-exit" @click="handleLogout" :disabled="isLoading">
+          Выйти
+        </button>
       </div>
       <div class="main-page__table-container">
         <SelectComponent :selected="selected" @update:selected="updateSelected" />
@@ -174,6 +182,11 @@ const filteredData: ComputedRef<IData[]> = computed(() => {
     width: 100%;
     min-height: 100vh;
     height: 100%;
+  }
+
+  &__spinner {
+    width: 60px;
+    height: 60px;
   }
 }
 </style>
