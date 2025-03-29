@@ -31,7 +31,6 @@ const { handleSubmit, errors, isSubmitting } = useForm({
 });
 
 const { value: email } = useField('email');
-
 const { value: password } = useField('password');
 
 const handleSignin = async (email: string, password: string) => {
