@@ -1,8 +1,5 @@
 import md5 from 'md5';
 
-// Введенные данные добавляются в массив. Надо ли повторно добавлять, если введен тот же логин?
-// Сделала проверку по active, потому что не совсем понимаю, как по заданию дальше происходит авторизация.
-
 const data = [
   {
     name: 'David',
@@ -45,20 +42,19 @@ export default defineEventHandler(async (event) => {
 
   const user = data.find((user) => user.credentials.username === body.user.email && user.active);
   if (!user) {
-    const newUser = {
-      name: `Новый пользователь ${new Date().toLocaleString()}`,
-      surname: '',
-      credentials: {
-        username: body.user.email,
-        passphrase: md5(body.user.password),
-      },
-      active: false,
-      created: new Date().toLocaleString(),
-      _comment: `Новый пользователь с логином ${body.user.email} и паролем '${body.user.password}'`,
-    };
-
-    data.push(newUser);
-    console.log('New data', data); //
+    // const newUser = {
+    //   name: `Новый пользователь ${new Date().toLocaleString()}`,
+    //   surname: '',
+    //   credentials: {
+    //     username: body.user.email,
+    //     passphrase: md5(body.user.password),
+    //   },
+    //   active: false,
+    //   created: new Date().toLocaleString(),
+    //   _comment: `Новый пользователь с логином ${body.user.email} и паролем '${body.user.password}'`,
+    // };
+    //
+    // data.push(newUser);
 
     return {
       statusCode: 404,
