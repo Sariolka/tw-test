@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import type { IData } from '~/types/types';
 import { formatShortDate } from '~/helpers/dateFormatter';
-import {getTitle} from "~/helpers/getTitle";
+import { getTitle } from '~/helpers/getTitle';
 
 const props = defineProps<{
   data: IData[] | null;
 }>();
 
-const keys = computed(() => (props.data ? Object.keys(props.data[0]) : []));
+const keys = computed(() => {
+  if (props.data && props.data.length > 0 && props.data[0]) {
+    return Object.keys(props.data[0]);
+  }
+  return [];
+});
+
 const data = ref(props.data);
 
 watch(
@@ -16,11 +22,10 @@ watch(
     data.value = newValue;
   },
 );
-
 </script>
 
 <template>
-  <div class="table">
+  <div class="table" v-if="data">
     <div class="table__head">
       <div class="table__row">
         <div class="table__cell table__cell_type-head" v-for="key in keys" :key="key">
@@ -36,6 +41,7 @@ watch(
       </div>
     </div>
   </div>
+  <div v-else>Loading...</div>
 </template>
 
 <style scoped lang="scss">

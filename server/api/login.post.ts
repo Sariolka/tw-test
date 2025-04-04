@@ -1,4 +1,6 @@
 import md5 from 'md5';
+// @ts-ignore
+import jwt from 'jsonwebtoken';
 
 const data = [
   {
@@ -42,20 +44,6 @@ export default defineEventHandler(async (event) => {
 
   const user = data.find((user) => user.credentials.username === body.user.email && user.active);
   if (!user) {
-    // const newUser = {
-    //   name: `Новый пользователь ${new Date().toLocaleString()}`,
-    //   surname: '',
-    //   credentials: {
-    //     username: body.user.email,
-    //     passphrase: md5(body.user.password),
-    //   },
-    //   active: false,
-    //   created: new Date().toLocaleString(),
-    //   _comment: `Новый пользователь с логином ${body.user.email} и паролем '${body.user.password}'`,
-    // };
-    //
-    // data.push(newUser);
-
     return {
       statusCode: 404,
       message: 'Введены неверные данные\n' + 'авторизации. Попробуйте ещё раз',
@@ -70,13 +58,15 @@ export default defineEventHandler(async (event) => {
       message: 'Введены неверные данные\n' + 'авторизации. Попробуйте ещё раз',
     };
   }
+  const JWT_SECRET = 'your_token';
+  const token = jwt.sign({ username: user.name }, JWT_SECRET, { expiresIn: '10d' });
 
   return {
     statusCode: 200,
-    message: 'Успешная авторизация.',
     user: {
       name: user.name,
       surname: user.surname,
+      token: token,
     },
   };
 });

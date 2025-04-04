@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import type { IData } from '~/types/types';
+import type { IData, IDataResponse } from '~/types/types';
 import type { ComputedRef } from 'vue';
 import { useAuthStore } from '~/stores';
+import { process } from 'std-env';
 
 const dataArray = ref<IData[]>([]);
 const store = useAuthStore();
 const router = useRouter();
-const isLoading = ref(true);
 const originalData = ref<IData[]>([]);
 const selected = ref('value1');
+const isLoading = ref(false);
+
+definePageMeta({
+  middleware: 'auth',
+});
 
 const user = computed(() => {
   return store.currentUser;
 });
 
-//Переброс на страницу входа
+//Пуш на страницу входа
 const pushToLogin = () => {
   router.push('/');
 };
@@ -23,8 +28,8 @@ const pushToLogin = () => {
 const handleLogout = async () => {
   isLoading.value = true;
   try {
-    await store.logout();
     pushToLogin();
+    await store.logout();
   } catch (error) {
     console.log('Что-то пошло не так:', error);
   } finally {
@@ -35,14 +40,13 @@ const handleLogout = async () => {
 //получение данных
 const getData = async () => {
   try {
-    const { data, error } = await useFetch('/api/data');
-
-    if (error.value) {
-      throw new Error(error.value.message);
+    const { data, error } = await $fetch<IDataResponse>('/api/data');
+    if (error) {
+      throw new Error(error.message);
     }
 
-    if (data.value) {
-      const parsedData = data.value.data as IData[];
+    if (data) {
+      const parsedData = data as IData[];
       dataArray.value = parsedData;
       originalData.value = parsedData.slice();
     }
@@ -52,22 +56,24 @@ const getData = async () => {
 };
 
 const loadPage = async () => {
+  isLoading.value = true;
+
   try {
-    if (!store.currentUser) {
-      pushToLogin();
-      return;
-    } else {
+    if (store.currentUser) {
       await getData();
+    } else {
+      pushToLogin();
     }
   } catch (error) {
     console.error('Ошибка:', error);
+    pushToLogin();
   } finally {
     isLoading.value = false;
   }
 };
 
 onMounted(async () => {
-  await store.initialize(); //ожидание инициализации пользователя!
+  isLoading.value = true;
   await loadPage();
 });
 
@@ -109,15 +115,15 @@ const filteredData: ComputedRef<IData[]> = computed(() => {
       <SpinnerComponent class="main-page__spinner" />
     </div>
     <div class="main-page__content" v-else>
-      <div class="main-page__user-control">
+      <div class="main-page__user-control" v-if="user">
         Пользователь:&nbsp;<strong>{{ user }} &emsp;</strong>
         <button class="main-page__btn-exit" @click="handleLogout" :disabled="isLoading">
           Выйти
         </button>
       </div>
-      <div class="main-page__table-container">
+      <div class="main-page__table-container" v-if="filteredData.length">
         <SelectComponent :selected="selected" @update:selected="updateSelected" />
-        <TableComponent v-if="filteredData" :data="filteredData" />
+        <TableComponent :data="filteredData" />
       </div>
     </div>
   </section>
