@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { useField, useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import * as zod from 'zod';
 import { useAuthStore } from '~/stores';
+import * as zod from 'zod';
 
 const errorText = ref('');
 const router = useRouter();
 const store = useAuthStore();
+
+definePageMeta({
+  middleware: 'auth',
+});
 
 const validationSchema = toTypedSchema(
   zod.object({
@@ -22,12 +26,18 @@ const validationSchema = toTypedSchema(
   }),
 );
 
-const pushToMain = () => {
+const pushToAccount = () => {
   router.push('/account');
 };
 
 const { handleSubmit, errors, isSubmitting } = useForm({
   validationSchema,
+});
+
+onMounted(async () => {
+  if (store.currentUser) {
+    await router.push('/account');
+  }
 });
 
 const { value: email } = useField('email');
@@ -44,12 +54,11 @@ const handleSignin = async (email: string, password: string) => {
       method: 'post',
       body: { user },
     });
-    if (res.statusCode > 399) {
-      errorText.value = res.message;
-    }
     if (res.statusCode === 200) {
-      store.setUser(res.user.name + ' ' + res.user.surname);
-      pushToMain();
+      store.setUser(res.user.name + ' ' + res.user.surname, res.token);
+      pushToAccount();
+    } else {
+      errorText.value = res.message;
     }
   } catch (error: any) {
     console.error(error);
@@ -63,42 +72,44 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <section class="login">
-    <form class="login__form" id="login" novalidate @submit.prevent="onSubmit">
-      <h1 class="login__title">Авторизация</h1>
-      <div class="login__container">
-        <label for="email" class="login__label">Логин</label>
-        <input
-          class="login__input"
-          :class="{ 'login__input_type-error': errors.email || errorText }"
-          v-model.lazy="email"
-          placeholder="Введите логин"
-          type="email"
-          id="email"
-        />
-        <span class="login__error">{{ errors.email }}</span>
-      </div>
+  <ClientOnly>
+    <section class="login">
+      <form class="login__form" id="login" novalidate @submit.prevent="onSubmit">
+        <h1 class="login__title">Авторизация</h1>
+        <div class="login__container">
+          <label for="email" class="login__label">Логин</label>
+          <input
+            class="login__input"
+            :class="{ 'login__input_type-error': errors.email || errorText }"
+            v-model.lazy="email"
+            placeholder="Введите логин"
+            type="email"
+            id="email"
+          />
+          <span class="login__error">{{ errors.email }}</span>
+        </div>
 
-      <div class="login__container">
-        <label for="password" class="login__label">Пароль</label>
-        <input
-          v-model.lazy="password"
-          class="login__input"
-          :class="{ 'login__input_type-error': errors.password || errorText }"
-          type="password"
-          placeholder="Введите пароль"
-          id="password"
-          minlength="6"
-        />
-        <span class="login__error">{{ errors.password }}</span>
-      </div>
-      <button class="login__button" type="submit" :disabled="isSubmitting">
-        Войти
-        <SpinnerComponent v-if="isSubmitting" class="login__spinner" />
-        <span class="login__error">{{ errorText }}</span>
-      </button>
-    </form>
-  </section>
+        <div class="login__container">
+          <label for="password" class="login__label">Пароль</label>
+          <input
+            v-model.lazy="password"
+            class="login__input"
+            :class="{ 'login__input_type-error': errors.password || errorText }"
+            type="password"
+            placeholder="Введите пароль"
+            id="password"
+            minlength="6"
+          />
+          <span class="login__error">{{ errors.password }}</span>
+        </div>
+        <button class="login__button" type="submit" :disabled="isSubmitting">
+          Войти
+          <SpinnerComponent v-if="isSubmitting" class="login__spinner" />
+          <span class="login__error">{{ errorText }}</span>
+        </button>
+      </form>
+    </section>
+  </ClientOnly>
 </template>
 
 <style scoped lang="scss">
@@ -184,7 +195,7 @@ const onSubmit = handleSubmit(async (values) => {
     justify-content: center;
     font-family: 'Inter', 'Arial', sans-serif;
     font-size: 16px;
-    line-height: 19.36px;
+    line-height: 20px;
     font-style: normal;
     font-weight: 700;
     gap: 15px;

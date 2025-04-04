@@ -9,6 +9,10 @@ export interface IData {
   stock: number;
 }
 
-export interface IDataPlus extends IData {
-  [key: string]: any;
+export interface IDataResponse {
+  data: IData[];
+  error?: {
+    message: string;
+  };
 }
+
